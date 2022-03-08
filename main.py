@@ -5,7 +5,7 @@ import sudoku
 
 """ Pygame Setup and Global Variables"""
 pygame.init()
-screen = pygame.display.set_mode((400, 400 * 16 / 9))
+screen = pygame.display.set_mode((415, 400 * 16 / 9))
 # Preset size = (390, 600)
 pygame.display.set_caption("Sudoku Solver")
 scr = [screen.get_size()[0] - 2, screen.get_size()[1] - 27]
@@ -31,13 +31,13 @@ grid_row, grid_col = [0] * 9, [0] * 9
 tile_spacing = (2, 1)  # tile spacing = (thin spacing, thick spacing)
 tile_font = pygame.font.SysFont("Helvetica", int(tile_size / 1.5))
 grid_side = tile_size * 9 + 4 * tile_spacing[0] + 6 * tile_spacing[1]
-grid_rect = [(scr[0] - grid_side) / 2, scr[1] / 5.5, grid_side, grid_side]  # [x, y, width, height]
+grid_rect = [(scr[0] - grid_side) / 2, scr[1] / 4, grid_side, grid_side]  # [x, y, width, height]
 # title global var
-title_rect = [scr[0] / 4, scr[1] * 0.075, scr[0] / 2, scr[1] * 0.05]
-title_font = pygame.font.SysFont("Helvetica", scr[0] // 13)
+title_rect = [scr[0] / 4, scr[1] * 0.07, scr[0] / 2, scr[1] * 0.07]
+title_font = pygame.font.SysFont("Helvetica", scr[0] // 12)
 # num global var
-num_rect_size = scr[0] // 10 + 1
-num_y = scr[1] * 23.5 / 32
+num_rect_size = scr[0] / 10 + 1
+num_y = scr[1] * 0.807
 num_x = [(scr[0] - 9 * num_rect_size) / 2]  # -1 is for adjusting alignment with grid
 num_font = pygame.font.SysFont("Helvetica", int(num_rect_size // 1.5))
 # button global var
@@ -48,9 +48,12 @@ button_text = ["Delete", "Clear", "Solve"]
 button_space = button_size[0] * 0.65
 # message list
 message_status = 0
-message_list = ["Please enter at least 16 numbers to start solving", "Invalid Input", "Solving...",
-                "Sudoku Solved!"]
-message_rect = [scr[0] / 6, scr[1] * 11 / 12, scr[0] / 4, scr[1] / 24]
+message_list = ["Please enter at least 16 numbers to start solving", "Invalid Input", "Solving...", "Sudoku Solved!"]
+message_rect = [scr[0] / 6, scr[1] * 2 / 12, scr[0] * 2/3, scr[1] / 24]
+# exit image
+exit_button = pygame.transform.scale(pygame.image.load('exit.png').convert_alpha(), (scr[1] / 25, scr[1] / 25))
+exit_button_rect = [scr[0] - exit_button.get_size()[0] - 15, 40, exit_button.get_size()[0], exit_button.get_size()[1]]
+
 
 # Initialize Lists
 # Tile var
@@ -68,7 +71,7 @@ for _ in range(8):
 # Three Button - Delete, Clear, and Solve
 for button_num in range(3):
     #  draw button rect
-    button_rect[button_num] = [(scr[0] - 3 * button_size[0] - 2 * button_space) / 2 + button_num * (button_size[0] + button_space), scr[1] * 7.5 / 9, button_size[0], button_size[1]]
+    button_rect[button_num] = [(scr[0] - 3 * button_size[0] - 2 * button_space) / 2 + button_num * (button_size[0] + button_space), scr[1] * 11 / 12, button_size[0], button_size[1]]
 
 
 # UI Graphics
@@ -119,6 +122,14 @@ def draw(curr_sudoku):
             center=(button_rect[i][0] + button_rect[i][2] // 2, button_rect[i][1] + button_rect[i][3] / 2))
         screen.blit(button_render, button_text_rect)
 
+    # Message
+    message_font = pygame.font.SysFont("Helvetica", 17 if message_status == 0 else 22)
+    message_render = message_font.render(message_list[message_status], True, sudoku.text_color_list[1] if message_status == 1 else sudoku.text_color_list[0])
+    message_text_rect = message_render.get_rect(center=(message_rect[0] + message_rect[2] / 2, message_rect[1] + message_rect[3] / 2))
+    screen.blit(message_render, message_text_rect)
+
+    # Exit
+    screen.blit(exit_button, exit_button_rect)
 
 
 # Check if a tile is clicked - Focus
@@ -156,8 +167,7 @@ def click_button(curr_sudoku, curr_mouse):
     global button_size, button_rect
 
     for i in range(3):
-        if 0 <= curr_mouse[0] - button_rect[i][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[i][1] <= \
-                button_size[1]:
+        if 0 <= curr_mouse[0] - button_rect[i][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[i][1] <= button_size[1]:
             if i == 0:
                 curr_sudoku.num[curr_sudoku.curr_focus[0]][curr_sudoku.curr_focus[1]] = None
             elif i == 1:
@@ -189,7 +199,12 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 mouse = pygame.mouse.get_pos()
-                if click_grid(solver, mouse) or click_num(solver, mouse) or click_button(solver, mouse):
+                # Hit Quit
+                if 0 <= mouse[0] - exit_button_rect[0] <= exit_button_rect[2] and 0 <= mouse[1] - exit_button_rect[1] <= exit_button_rect[3]:
+                    pygame.quit()
+                    sys.exit()
+                # User Action
+                elif click_grid(solver, mouse) or click_num(solver, mouse) or click_button(solver, mouse):
                     draw(solver)
                     pygame.display.update()
 
