@@ -25,6 +25,7 @@ class Sudoku:
             self.num[self.curr_focus[0]][self.curr_focus[1]] = num_input
 
     def check(self):
+        # return True
         pass
 
     def __print__(self):
@@ -36,3 +37,7 @@ class Sudoku:
 
     def solve(self):
         pass
+
+
+def solve(grid):
+    pass

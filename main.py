@@ -23,7 +23,6 @@ Button: button_size, button_space, button_rect, button_text, button_font
 Message: message_rect, message_status, message_text, message_font
 """
 
-
 # Global Variable Declaration
 # tile and grid global var
 tile_size = scr[0] // 11
@@ -48,21 +47,22 @@ button_text = ["Delete", "Clear", "Solve"]
 button_space = button_size[0] * 0.65
 # message list
 message_status = 0
-message_list = ["Please enter at least 16 numbers to start solving", "Invalid Input", "Solving...", "Sudoku Solved!"]
-message_rect = [scr[0] / 6, scr[1] * 2 / 12, scr[0] * 2/3, scr[1] / 24]
+message_list = ["Please enter at least 16 numbers to start solving", "Invalid Input! Please try again", "Solving...", "Sudoku Solved!"]
+message_rect = [scr[0] / 6, scr[1] * 2 / 12, scr[0] * 2 / 3, scr[1] / 24]
 # exit image
 exit_button = pygame.transform.scale(pygame.image.load('exit.png').convert_alpha(), (scr[1] / 25, scr[1] / 25))
 exit_button_rect = [scr[0] - exit_button.get_size()[0] - 15, 40, exit_button.get_size()[0], exit_button.get_size()[1]]
-
 
 # Initialize Lists
 # Tile var
 for index in range(9):
     # store row pos
-    grid_row[index] = grid_rect[1] + tile_size * index + tile_spacing[0] * (index // 3 + 1) + tile_spacing[1] * (index - index // 3)
+    grid_row[index] = grid_rect[1] + tile_size * index + tile_spacing[0] * (index // 3 + 1) + tile_spacing[1] * (
+                index - index // 3)
     # store col pos
     # tile.x = grid.x + num * tile size + num * thick space + num * thin space
-    grid_col[index] = grid_rect[0] + tile_size * index + tile_spacing[0] * (index // 3 + 1) + tile_spacing[1] * (index - index // 3)
+    grid_col[index] = grid_rect[0] + tile_size * index + tile_spacing[0] * (index // 3 + 1) + tile_spacing[1] * (
+                index - index // 3)
 
 # Number Option
 for _ in range(8):
@@ -71,12 +71,13 @@ for _ in range(8):
 # Three Button - Delete, Clear, and Solve
 for button_num in range(3):
     #  draw button rect
-    button_rect[button_num] = [(scr[0] - 3 * button_size[0] - 2 * button_space) / 2 + button_num * (button_size[0] + button_space), scr[1] * 11 / 12, button_size[0], button_size[1]]
+    button_rect[button_num] = [
+        (scr[0] - 3 * button_size[0] - 2 * button_space) / 2 + button_num * (button_size[0] + button_space),
+        scr[1] * 11 / 12, button_size[0], button_size[1]]
 
 
 # UI Graphics
 def draw(curr_sudoku):
-
     screen.fill(sudoku.tile_color_list[0])  # UI background
 
     """ Title """
@@ -122,18 +123,22 @@ def draw(curr_sudoku):
             center=(button_rect[i][0] + button_rect[i][2] // 2, button_rect[i][1] + button_rect[i][3] / 2))
         screen.blit(button_render, button_text_rect)
 
-    # Message
-    message_font = pygame.font.SysFont("Helvetica", 17 if message_status == 0 else 22)
+    """ Message """
+    message_font = pygame.font.SysFont("Helvetica", 17 if message_status <= 1 else 22)
     message_render = message_font.render(message_list[message_status], True, sudoku.text_color_list[1] if message_status == 1 else sudoku.text_color_list[0])
-    message_text_rect = message_render.get_rect(center=(message_rect[0] + message_rect[2] / 2, message_rect[1] + message_rect[3] / 2))
+    message_text_rect = message_render.get_rect(
+        center=(message_rect[0] + message_rect[2] / 2, message_rect[1] + message_rect[3] / 2))
     screen.blit(message_render, message_text_rect)
 
     # Exit
     screen.blit(exit_button, exit_button_rect)
 
+    # Pygame Update
+    pygame.display.update()
 
-# Check if a tile is clicked - Focus
-def click_grid(curr_sudoku, curr_mouse):
+
+# Focus to clicked tile
+def focus_tile(curr_sudoku, curr_mouse):
     # Return: True if a tile is being clicked
     global grid_row, grid_col, tile_size
 
@@ -144,52 +149,73 @@ def click_grid(curr_sudoku, curr_mouse):
                 # print(curr_mouse)
                 if 0 <= curr_mouse[0] - grid_col[k] <= tile_size:
                     curr_sudoku.curr_focus = (i, k)
-                    return True
-    return False
+                    draw(curr_sudoku)
 
 
-# Check if a number option is being clicked - Input
-def click_num(curr_sudoku, curr_mouse):
+# Input number to currently focused tile
+def input_num(curr_sudoku, curr_mouse):
     # Return: True if a num tile has been clicked
-    global num_rect_size, num_x, num_y
+    global num_rect_size, num_x, num_y, message_status
 
     # check which pos in the grid is being clicked on
     if 0 <= curr_mouse[1] - num_y <= num_rect_size:
         for i in range(9):
             if 0 <= curr_mouse[0] - num_x[i] <= num_rect_size:
+                # enter
                 curr_sudoku.enter(i + 1)
-                return True
+                # update message
+                message_update(0, curr_sudoku)
+
+
+# Delete curr tile value if clicked
+def delete(curr_sudoku, curr_mouse):
+    global button_size, button_rect, message_status
+
+    if 0 <= curr_mouse[0] - button_rect[0][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[0][1] <= button_size[1]:
+        # delete num
+        curr_sudoku.num[curr_sudoku.curr_focus[0]][curr_sudoku.curr_focus[1]] = None
+        # update message
+        message_update(0, curr_sudoku)
+
+
+def click_clear(curr_sudoku, curr_mouse):
+    global button_size, button_rect, message_status
+    if 0 <= curr_mouse[0] - button_rect[1][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[1][1] <= button_size[1]:
+        # clear
+        curr_sudoku.reset()
+        # update message
+        message_update(0, curr_sudoku)
+        return True
     return False
 
 
-# Check if a button has been clicked - Function (delete, clear, and solve)
-def click_button(curr_sudoku, curr_mouse):
+# check if 'solve' is clicked, return bool
+def click_solve(curr_mouse) -> bool:
     global button_size, button_rect
+    return 0 <= curr_mouse[0] - button_rect[2][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[2][1] <= button_size[1]
 
-    for i in range(3):
-        if 0 <= curr_mouse[0] - button_rect[i][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[i][1] <= button_size[1]:
-            if i == 0:
-                curr_sudoku.num[curr_sudoku.curr_focus[0]][curr_sudoku.curr_focus[1]] = None
-            elif i == 1:
-                curr_sudoku.reset()
-            elif i == 2:
-                curr_sudoku.solve()
-            return True
-    return False
+
+def message_update(status, curr_sudoku):
+    global message_status
+    if status == 0:
+        curr_sudoku.text_color = [[sudoku.text_color_list[0] for _ in range(9)] for _ in range(9)]
+    message_status = status
+    draw(curr_sudoku)
 
 
 # MAIN()
 # Function Loop
 def main():
+    global message_status
+
     """ Sudoku Setup """
     solver = sudoku.Sudoku()
 
     """ Function Loop"""
     draw(solver)
-    pygame.display.update()
+    solved = False
 
-    end = False
-    while not end:
+    while True:
 
         for event in pygame.event.get():
             # Quit
@@ -199,16 +225,31 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 mouse = pygame.mouse.get_pos()
-                # Hit Quit
+
+                # Quit
                 if 0 <= mouse[0] - exit_button_rect[0] <= exit_button_rect[2] and 0 <= mouse[1] - exit_button_rect[1] <= exit_button_rect[3]:
                     pygame.quit()
                     sys.exit()
-                # User Action
-                elif click_grid(solver, mouse) or click_num(solver, mouse) or click_button(solver, mouse):
-                    draw(solver)
-                    pygame.display.update()
 
-        # Draw
+                # User Actions
+                focus_tile(solver, mouse)
+                if solved:  # when sudoku is solved, prevent user action other than 'clear'
+                    solved = not click_clear(solver, mouse)
+                # user action - focus, input, and delete
+                else:
+                    input_num(solver, mouse) or delete(solver, mouse) or click_clear(solver, mouse)
+                    # solve
+                    if click_solve(mouse):
+                        if solver.check():  # valid input
+                            message_update(2, solver)  # update message
+                            solver.solve()  # solve
+                            solver.curr_focus = (-1, -1)  # remove focusing when solved
+                            solved = True
+                            message_update(3, solver)
+                        else:
+                            message_update(1, solver)
+
+        # clock
         clock.tick(20)
 
 
