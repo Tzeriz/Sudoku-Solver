@@ -21,6 +21,7 @@ Grid: grid_side, grid_row, grid_col, grid_rect
 Number option: num_y, num_x, num_rect_size, num_font
 Button: button_size, button_space, button_rect, button_text, button_font
 Message: message_rect, message_status, message_text, message_font
+Exit Image: exit_button, exit_button_rect
 """
 
 # Global Variable Declaration
@@ -47,7 +48,7 @@ button_text = ["Delete", "Clear", "Solve"]
 button_space = button_size[0] * 0.65
 # message list
 message_status = 0
-message_list = ["Please enter at least 16 numbers to start solving", "Invalid Input! Please try again", "Solving...", "Sudoku Solved!"]
+message_list = ["Please input the puzzle and click \"solve\"", "Invalid Input! Please try again", "Solving...", "Sudoku Solved!", "No valid solution"]
 message_rect = [scr[0] / 6, scr[1] * 2 / 12, scr[0] * 2 / 3, scr[1] / 24]
 # exit image
 exit_button = pygame.transform.scale(pygame.image.load('exit.png').convert_alpha(), (scr[1] / 25, scr[1] / 25))
@@ -100,7 +101,7 @@ def draw(curr_sudoku):
                 pygame.draw.rect(screen, curr_sudoku.tile_color[i][k], tile_rect)
 
             # Blit text
-            if curr_sudoku.num[i][k] is not None:
+            if curr_sudoku.num[i][k] != 0:
                 text_render = tile_font.render(str(curr_sudoku.num[i][k]), True, curr_sudoku.text_color[i][k])
                 text_rect = text_render.get_rect(
                     center=(tile_rect[0] + tile_size / 2, tile_rect[1] + tile_size / 2))  # put text on rectangle
@@ -173,7 +174,7 @@ def delete(curr_sudoku, curr_mouse):
 
     if 0 <= curr_mouse[0] - button_rect[0][0] <= button_size[0] and 0 <= curr_mouse[1] - button_rect[0][1] <= button_size[1]:
         # delete num
-        curr_sudoku.num[curr_sudoku.curr_focus[0]][curr_sudoku.curr_focus[1]] = None
+        curr_sudoku.num[curr_sudoku.curr_focus[0]][curr_sudoku.curr_focus[1]] = 0
         # update message
         message_update(0, curr_sudoku)
 
@@ -241,13 +242,15 @@ def main():
                     # solve
                     if click_solve(mouse):
                         if solver.check():  # valid input
-                            message_update(2, solver)  # update message
-                            solver.solve()  # solve
-                            solver.curr_focus = (-1, -1)  # remove focusing when solved
-                            solved = True
-                            message_update(3, solver)
+                            message_update(2, solver)  # message: invalid input
+                            if solver.solve():  # solve
+                                solver.curr_focus = (-1, -1)  # remove focusing when solved
+                                solved = True
+                                message_update(3, solver)  # message: solved
+                            else:
+                                message_update(5, solver)  # message: no solution
                         else:
-                            message_update(1, solver)
+                            message_update(1, solver)  # message: entering
 
         # clock
         clock.tick(20)
