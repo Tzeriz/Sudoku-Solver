@@ -233,12 +233,11 @@ def main():
                     sys.exit()
 
                 # User Actions
-                focus_tile(solver, mouse)
                 if solved:  # when sudoku is solved, prevent user action other than 'clear'
                     solved = not click_clear(solver, mouse)
                 # user action - focus, input, and delete
                 else:
-                    input_num(solver, mouse) or delete(solver, mouse) or click_clear(solver, mouse)
+                    focus_tile(solver, mouse) or input_num(solver, mouse) or delete(solver, mouse) or click_clear(solver, mouse)
                     # solve
                     if click_solve(mouse):
                         if solver.check():  # valid input
@@ -251,9 +250,6 @@ def main():
                                 message_update(5, solver)  # message: no solution
                         else:
                             message_update(1, solver)  # message: entering
-
-        # clock
-        clock.tick(20)
 
 
 if __name__ == '__main__':

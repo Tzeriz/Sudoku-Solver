@@ -44,7 +44,7 @@ class Sudoku:
         for row in range(9):
             for col in range(9):
                 if self.num[row][col] == 0:
-                    self.text_color[row][col] = text_color_list[2]
+                    self.text_color[row][col] = text_color_list[1]
         if not solve.solve():
             self.text_color = [[text_color_list[0] for _ in range(9)] for _ in range(9)]
             return False
