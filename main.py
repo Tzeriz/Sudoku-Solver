@@ -7,7 +7,7 @@ import sudoku
 
 """ Pygame Setup and Global Variables"""
 pygame.init()
-screen = pygame.display.set_mode((415, 400 * 16 / 9))
+screen = pygame.display.set_mode((400, 400 * 16 / 9))
 # Preset size = (390, 600)
 pygame.display.set_caption("Sudoku Solver")
 scr = [screen.get_size()[0] - 2, screen.get_size()[1] - 27]
@@ -17,11 +17,11 @@ pygame.time.set_timer(pygame.USEREVENT, 100)
 """ 
 Graphic Global Variables
 
-Title: title_rect, title_font,
+Title: title_rect, title_button
 Tile: tile_size, tile_spacing, tile_font
 Grid: grid_side, grid_row, grid_col, grid_rect
 Number option: num_y, num_x, num_rect_size, num_font
-Button: button_size, button_space, button_rect, button_text, button_font
+Button: button_size, button_space, button_rect, button_text, button_font, button_color
 Message: message_rect, message_status, message_text, message_font
 Exit Image: exit_button, exit_button_rect
 """
@@ -31,30 +31,32 @@ Exit Image: exit_button, exit_button_rect
 tile_size = scr[0] // 11
 grid_row, grid_col = [0] * 9, [0] * 9
 tile_spacing = (2, 1)  # tile spacing = (thin spacing, thick spacing)
-tile_font = pygame.font.SysFont("Helvetica", int(tile_size / 1.5))
+tile_font = pygame.font.SysFont("garamond", int(tile_size / 1.5))
 grid_side = tile_size * 9 + 4 * tile_spacing[0] + 6 * tile_spacing[1]
-grid_rect = [(scr[0] - grid_side) / 2, scr[1] / 4, grid_side, grid_side]  # [x, y, width, height]
+grid_rect = [(scr[0] - grid_side) / 2, scr[1] / 3.2, grid_side, grid_side]  # [x, y, width, height]
 # title global var
-title_rect = [scr[0] / 4, scr[1] * 0.07, scr[0] / 2, scr[1] * 0.07]
-title_font = pygame.font.SysFont("Helvetica", scr[0] // 12)
+title_rect = [scr[0] / 6, scr[1] * 0.04, scr[0] * 2 / 3, scr[0] / 3]
+title_button = pygame.transform.scale(pygame.image.load('sudoku_solver_title.png').convert_alpha(), (scr[0] * 2 / 3, scr[0] / 3))
 # num global var
-num_rect_size = scr[0] / 10 + 1
-num_y = scr[1] * 0.807
-num_x = [(scr[0] - 9 * num_rect_size) / 2]  # -1 is for adjusting alignment with grid
-num_font = pygame.font.SysFont("Helvetica", int(num_rect_size // 1.5))
+num_rect_size = scr[0] // 10
+num_y = scr[1] * 0.85
+num_x = [(scr[0] - 9 * num_rect_size) / 2]
+num_font = pygame.font.SysFont("garamond", int(num_rect_size / 1.5))
 # button global var
 button_rect = [[0] * 4] * 3
 button_size = (scr[0] // 5.5, scr[1] // 20)
-button_font = pygame.font.SysFont("Helvetica", int(button_size[1] // 1.75))
+button_font = pygame.font.SysFont("castellar", int(button_size[1] // 1.75))
+# harrington,
 button_text = ["Delete", "Clear", "Solve"]
+# button_color = ["#900603", "#fca510", "#32612d"]
 button_space = button_size[0] * 0.65
 # message list
 message_status = 0
 message_list = ["Please input the puzzle and click \"solve\"", "Invalid Input! Please try again", "Solving...", "Sudoku Solved!", "No valid solution"]
-message_rect = [scr[0] / 6, scr[1] * 2 / 12, scr[0] * 2 / 3, scr[1] / 24]
+message_rect = [scr[0] / 6, scr[1] / 4.05, scr[0] * 2 / 3, scr[1] / 24]
 # exit image
 exit_button = pygame.transform.scale(pygame.image.load('exit.png').convert_alpha(), (scr[1] / 25, scr[1] / 25))
-exit_button_rect = [scr[0] - exit_button.get_size()[0] - 15, 40, exit_button.get_size()[0], exit_button.get_size()[1]]
+exit_button_rect = [scr[0] - exit_button.get_size()[0] - 15, 20, exit_button.get_size()[0], exit_button.get_size()[1]]
 
 # Initialize Lists
 # Tile var
@@ -76,7 +78,7 @@ for button_num in range(3):
     #  draw button rect
     button_rect[button_num] = [
         (scr[0] - 3 * button_size[0] - 2 * button_space) / 2 + button_num * (button_size[0] + button_space),
-        scr[1] * 11 / 12, button_size[0], button_size[1]]
+        scr[1] * 0.93, button_size[0], button_size[1]]
 
 
 # UI Graphics
@@ -84,9 +86,7 @@ def draw(curr_sudoku):
     screen.fill(sudoku.tile_color_list[0])  # UI background
 
     """ Title """
-    text_render = title_font.render("Sudoku Solver", True, sudoku.text_color_list[0])
-    text_rect = text_render.get_rect(center=(title_rect[0] + title_rect[2] / 2, title_rect[1] + title_rect[3] / 2))
-    screen.blit(text_render, text_rect)
+    screen.blit(title_button, title_rect)
 
     """Grid / Tile"""
     # Draw Grid
@@ -119,7 +119,7 @@ def draw(curr_sudoku):
     """ Three Button - Delete, Clear, and Solve"""
     for i in range(3):
         # draw button rect
-        pygame.draw.rect(screen, "#cccccc", button_rect[i])
+        # pygame.draw.rect(screen, button_color[i], button_rect[i])
         # blit button text
         button_render = button_font.render(button_text[i], True, sudoku.text_color_list[0])
         button_text_rect = button_render.get_rect(
@@ -127,7 +127,7 @@ def draw(curr_sudoku):
         screen.blit(button_render, button_text_rect)
 
     """ Message """
-    message_font = pygame.font.SysFont("Helvetica", 17 if message_status <= 1 else 22)
+    message_font = pygame.font.SysFont("garamond", 17 if message_status <= 1 else 22)
     message_render = message_font.render(message_list[message_status], True, sudoku.text_color_list[1] if message_status == 1 else sudoku.text_color_list[0])
     message_text_rect = message_render.get_rect(
         center=(message_rect[0] + message_rect[2] / 2, message_rect[1] + message_rect[3] / 2))

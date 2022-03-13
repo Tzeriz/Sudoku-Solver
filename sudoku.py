@@ -1,7 +1,7 @@
 import solve
 
 tile_color_list = ["#ffffff", "#cccccc", "#ffcccb"]  # white, light-gray, light-red
-text_color_list = ["#000000", "#ff0000", "#0000ff"]  # black, red, blue
+text_color_list = ["#000000", "#ff0000", "#0000ff", "#ffffff"]  # black, red, blue
 
 class Sudoku:
 
